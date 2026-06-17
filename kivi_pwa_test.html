@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#15171c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Kivi">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<title>Kivi</title>
+<style>
+:root{
+  --bg:#15171c; --panel:#20242d; --panel2:#2b303b; --text:#f5f5f5; --muted:#bfc4cf;
+  --white:#f2eee5; --black:#252a31; --red:#d63e73;
+  --p1:#32a8ff; --p2:#ffb12e; --p3:#6ee06e; --p4:#d783ff;
+  --ok:#56d364; --bad:#ff6b6b; --line:#404756;
+  --safe-top:env(safe-area-inset-top,0px); --safe-right:env(safe-area-inset-right,0px);
+  --safe-bottom:env(safe-area-inset-bottom,0px); --safe-left:env(safe-area-inset-left,0px);
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+body{margin:0; min-height:100svh; background:var(--bg); color:var(--text); font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; overflow:hidden;}
+button,select,input{font:inherit;}
+button{border:0; border-radius:12px; padding:10px 14px; background:#3b4252; color:var(--text); font-weight:700; cursor:pointer;}
+button:disabled{opacity:.45; cursor:not-allowed;}
+button.primary{background:#2d74da;}
+button.good{background:#228b4f;}
+button.warn{background:#a54a4a;}
+.app{height:100svh; display:grid; grid-template-rows:auto minmax(0,1fr); gap:8px; padding:max(10px,var(--safe-top)) max(10px,var(--safe-right)) max(10px,var(--safe-bottom)) max(10px,var(--safe-left)); overflow:hidden;}
+.top{display:flex; align-items:center; justify-content:space-between; gap:10px;}
+h1{font-size:clamp(20px,3vw,34px); margin:0; letter-spacing:.02em;}
+.topRight{display:flex; align-items:center; justify-content:flex-end; gap:8px; flex-wrap:wrap;}
+.meta{display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end; color:var(--muted); font-weight:650;}
+.topActions{display:flex; gap:6px; align-items:center;}
+.topActions button{padding:8px 11px; border-radius:10px; white-space:nowrap;}
+.layout{min-height:0; display:grid; grid-template-columns:minmax(0,1fr) minmax(280px,360px); gap:10px;}
+.boardWrap{min-height:0; display:flex; align-items:center; justify-content:center; background:linear-gradient(180deg,#1d2129,#15171c); border:1px solid #303642; border-radius:18px; padding:10px;}
+.board{display:grid; grid-template-columns:repeat(7,1fr); grid-template-rows:repeat(7,1fr); gap:4px; width:min(100%, calc(100svh - 88px)); max-width:760px; aspect-ratio:1;}
+.cell{position:relative; border-radius:9px; border:2px solid #111820; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:4px; line-height:1.02; font-weight:800; user-select:none; box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);}
+.cell.v{background:var(--white); color:#1a1d22;}
+.cell.m{background:var(--black); color:#fff;}
+.cell.p{background:var(--red); color:#fff;}
+.cell .pts{position:absolute; top:3px; left:5px; font-size:12px; opacity:.75;}
+.cell .cond{font-size:clamp(9px,1.55vw,15px); max-width:100%; overflow:hidden;}
+.cell.valid{outline:4px solid var(--ok); outline-offset:-4px; cursor:pointer;}
+.cell.invalidHint{outline:3px solid var(--bad); outline-offset:-3px;}
+.stone{position:absolute; width:42%; aspect-ratio:1; border-radius:50%; border:3px solid rgba(255,255,255,.75); box-shadow:0 3px 9px rgba(0,0,0,.45); top:50%; left:50%; transform:translate(-50%,-50%);}
+.stone.p1{background:var(--p1);} .stone.p2{background:var(--p2);} .stone.p3{background:var(--p3);} .stone.p4{background:var(--p4);}
+.side{min-height:0; display:grid; grid-template-rows:auto auto minmax(56px,1fr); gap:8px;}
+.panel{background:var(--panel); border:1px solid #303642; border-radius:18px; padding:9px;}
+.panel:last-child{min-height:0;}
+.players{display:grid; gap:5px;}
+.player{display:grid; grid-template-columns:22px 1fr auto; align-items:center; gap:7px; padding:5px 6px; border-radius:10px; background:var(--panel2); color:var(--muted); font-weight:700;}
+.player.active{outline:3px solid #fff; color:#fff;}
+.dot{width:18px; height:18px; border-radius:50%; border:2px solid rgba(255,255,255,.7);}
+.dot.p1{background:var(--p1);} .dot.p2{background:var(--p2);} .dot.p3{background:var(--p3);} .dot.p4{background:var(--p4);}
+.dice{display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin:6px 0;}
+.die{aspect-ratio:1; border-radius:13px; background:#f6f2e8; color:#111; display:flex; align-items:center; justify-content:center; font-size:clamp(24px,4.5vw,38px); font-weight:900; border:4px solid transparent; box-shadow:0 3px 7px rgba(0,0,0,.35);}
+.die.reroll{border-color:#2d74da; background:#dceaff;}
+.controls{display:grid; grid-template-columns:1fr 1fr; gap:6px;}
+.controls button{padding:8px 10px; border-radius:10px;}
+.controls .wide{grid-column:1/-1;}
+.log{height:100%; min-height:56px; overflow:auto; color:#d7dbe5; background:#11141a; border-radius:12px; padding:8px; font-size:13px; line-height:1.3;}
+.setup{position:fixed; inset:0; background:rgba(0,0,0,.72); display:flex; align-items:center; justify-content:center; padding:16px; z-index:10;}
+.dialog{width:min(520px,100%); background:#20242d; border:1px solid #4a5263; border-radius:22px; padding:18px; box-shadow:0 20px 50px rgba(0,0,0,.55);}
+.dialog h2{margin:0 0 12px;}
+.rules{display:grid; gap:10px; color:#e6e9f0; line-height:1.35;}
+.rules p{margin:0;}
+.rules ul{margin:0; padding-left:20px;}
+.rules li{margin:4px 0;}
+.row{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:10px 0; align-items:center;}
+.row label{font-weight:700; color:var(--muted);}
+.row select,.row input{width:100%; border:1px solid #4b5363; border-radius:10px; padding:9px; background:#12151b; color:#fff;}
+.hidden{display:none!important;}
+.scoreTable{width:100%; border-collapse:collapse; font-size:14px;}
+.scoreTable td,.scoreTable th{padding:6px; border-bottom:1px solid #3a414e; text-align:left;}
+@media (orientation:portrait){
+ body{height:100dvh; overflow:hidden;}
+ .app{height:100dvh; min-height:0; gap:6px; padding:max(6px,var(--safe-top)) max(6px,var(--safe-right)) max(6px,var(--safe-bottom)) max(6px,var(--safe-left)); overflow:hidden;}
+ .layout{min-height:0; grid-template-columns:1fr; grid-template-rows:minmax(0,1fr) auto; gap:6px; overflow:hidden;}
+ .boardWrap{min-height:0; padding:6px; border-radius:14px;}
+ .board{width:auto; height:100%; max-width:100%; max-height:100%; gap:3px;}
+ .cell{border-width:1px; border-radius:7px; padding:2px;}
+ .cell .pts{top:2px; left:4px; font-size:10px;}
+ .cell .cond{font-size:clamp(8px,2.5vw,10px);}
+ .stone{width:38%; border-width:2px;}
+ .side{min-height:0; grid-template-rows:auto auto minmax(44px,1fr); gap:6px;}
+ .panel{padding:6px; border-radius:14px;}
+ .players{gap:4px;}
+ .player{grid-template-columns:18px 1fr auto; gap:5px; padding:4px 6px; font-size:13px; line-height:1.1;}
+ .player small{font-size:11px;}
+ .dot{width:16px; height:16px;}
+ .dice{grid-template-columns:repeat(6,1fr); gap:5px; margin:5px 0;}
+ .die{border-radius:9px; border-width:3px; font-size:24px;}
+ .controls button{padding:7px 8px;}
+ .log{min-height:44px; padding:7px; font-size:12px;}
+ .top{align-items:flex-start;}
+ .topRight{align-items:flex-end;}
+ h1{font-size:22px;}
+ .meta{font-size:13px;}
+ .topActions button{padding:7px 9px;}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <h1>Kivi</h1>
+    <div class="topRight">
+      <div class="meta"><span id="turnInfo"></span><span id="rollInfo"></span></div>
+      <div class="topActions">
+        <button id="rulesBtn">Ohjeet</button>
+        <button id="newBtn" class="warn">Uusi peli</button>
+      </div>
+    </div>
+  </div>
+  <div class="layout">
+    <div class="boardWrap"><div id="board" class="board"></div></div>
+    <div class="side">
+      <div class="panel"><div id="players" class="players"></div></div>
+      <div class="panel">
+        <div id="comboText" style="font-weight:800;color:#fff;min-height:24px">Heitä nopat.</div>
+        <div id="dice" class="dice"></div>
+        <div class="controls">
+          <button id="rollBtn" class="primary">Heitä</button>
+          <button id="endBtn">Päätä vuoro</button>
+        </div>
+      </div>
+      <div class="panel"><div id="log" class="log"></div></div>
+    </div>
+  </div>
+</div>
+
+<div id="setup" class="setup">
+  <div class="dialog">
+    <h2>Uusi peli</h2>
+    <div class="row"><label>Pelaajia</label><select id="playerCount"><option>2</option><option>3</option><option>4</option></select></div>
+    <div id="playerTypes"></div>
+    <button id="startBtn" class="primary" style="width:100%;margin-top:12px">Aloita</button>
+  </div>
+</div>
+
+<div id="results" class="setup hidden">
+  <div class="dialog">
+    <h2>Lopputulos</h2>
+    <div id="resultBody"></div>
+    <button id="againBtn" class="primary" style="width:100%;margin-top:12px">Uusi peli</button>
+  </div>
+</div>
+
+<div id="rulesModal" class="setup hidden">
+  <div class="dialog">
+    <h2>Ohjeet</h2>
+    <div class="rules">
+      <p>Pelataan 2-4 pelaajalla. Jokaisella on 10 kiveä ja peli kestää 10 kierrosta.</p>
+      <ul>
+        <li>Heitä 6 noppaa. Saat heittää enintään kolme kertaa.</li>
+        <li>Ensimmäisen heiton jälkeen valitse nopat, jotka heitetään uudestaan.</li>
+        <li>Lopputuloksella saa asettaa yhden kiven kelvolliseen vapaaseen ruutuun.</li>
+        <li>Viisi samaa tai kuuden suora: aseta kivi mihin tahansa vapaaseen ruutuun.</li>
+        <li>Kuusi samaa: aseta kivi mihin tahansa ruutuun; varattu kivi poistuu pelistä.</li>
+        <li>Pisteet lasketaan yhtenäisistä vaaka- ja pystyriveistä: ruutujen summa kertaa rivin pituus.</li>
+      </ul>
+    </div>
+    <button id="closeRulesBtn" class="primary" style="width:100%;margin-top:14px">Sulje</button>
+  </div>
+</div>
+<script>
+const COLOR_ROWS = [
+ 'vmmvmmv','mpvpvpm','vmmmpmv','mvmpmvm','vmpmmmv','mpvpvpm','vmmvmmv'
+];
+const CONDITIONS = [
+ {id:'twoPairs', name:'Kaksi paria', short:'2 paria'},
+ {id:'fourStraight', name:'Neljän suora', short:'A B C D'},
+ {id:'sumLe12', name:'Summa ≤ 12', short:'Σ ≤ 12'},
+ {id:'sumGe30', name:'Summa ≥ 30', short:'Σ ≥ 30'},
+ {id:'allEven', name:'Kaikki parillisia', short:'2,4,6'},
+ {id:'allOdd', name:'Kaikki parittomia', short:'1,3,5'},
+ {id:'twoTriples', name:'Kahdet kolmoset', short:'AAA BBB'},
+ {id:'threePairs', name:'Kolmet parit', short:'AA BB CC'},
+ {id:'fourPlusPair', name:'Neloset ja pari', short:'AAAA BB'},
+ {id:'fiveStraight', name:'Viiden suora', short:'A B C D E'},
+ {id:'triplePlusPair', name:'Kolmoset ja pari', short:'AAA BB'},
+ {id:'triple', name:'Kolmoset', short:'AAA'},
+ {id:'quad', name:'Neloset', short:'AAAA'}
+];
+const CONDITION_TIERS = {
+ v: ['twoPairs','triple','fourStraight','triplePlusPair'],
+ m: ['fiveStraight','quad','threePairs','sumLe12','sumGe30'],
+ p: ['allEven','allOdd','fourPlusPair','twoTriples']
+};
+const PTS = {v:1,m:2,p:3};
+const PLAYER_COLORS = ['p1','p2','p3','p4'];
+let state;
+
+function counts(vals){ const c=[0,0,0,0,0,0,0]; vals.forEach(v=>c[v]++); return c; }
+function freqs(vals){ return counts(vals).slice(1).filter(x=>x>0).sort((a,b)=>b-a); }
+function hasStraight(vals,n){ const set=new Set(vals); for(let s=1;s<=7-n;s++){ let ok=true; for(let x=s;x<s+n;x++) if(!set.has(x)) ok=false; if(ok) return true; } return false; }
+function isSixSame(vals){ return vals.length===6 && vals.every(v=>v===vals[0]); }
+function isFiveSame(vals){ return vals.length===6 && Math.max(...counts(vals))===5; }
+function isSixStraight(vals){ return vals.length===6 && new Set(vals).size===6 && vals.every(v=>v>=1&&v<=6); }
+function canPlaceOnCell(cell, vals){ return state.rolls>0 && (cell.stone===null || isSixSame(vals)) && validFor(cell.cond,vals); }
+function exactCombo(vals){
+ const f=freqs(vals); const sum=vals.reduce((a,b)=>a+b,0);
+ if(isSixSame(vals)) return 'Kuusi samaa – jokeri';
+ if(isSixStraight(vals)) return 'Kuuden suora – jokeri';
+ if(isFiveSame(vals)) return 'Viisi samaa – jokeri';
+ if(f.join(',')==='4,2') return 'Neloset ja pari';
+ if(f.join(',')==='3,3') return 'Kahdet kolmoset';
+ if(f.join(',')==='3,2,1') return 'Kolmoset ja pari';
+ if(f.join(',')==='2,2,2') return 'Kolmet parit';
+ if(f.join(',')==='2,2,1,1') return 'Kaksi paria';
+ if(f[0]===4) return 'Neloset';
+ if(f[0]===3) return 'Kolmoset';
+ if(hasStraight(vals,5)) return 'Viiden suora';
+ if(hasStraight(vals,4)) return 'Neljän suora';
+ if(vals.every(v=>v%2===0)) return 'Kaikki parillisia';
+ if(vals.every(v=>v%2===1)) return 'Kaikki parittomia';
+ if(sum<=12) return 'Summa ≤ 12';
+ if(sum>=30) return 'Summa ≥ 30';
+ return 'Ei osumaa';
+}
+function validFor(cond, vals){
+ const f=freqs(vals), sum=vals.reduce((a,b)=>a+b,0);
+ if(isSixSame(vals) || isSixStraight(vals) || isFiveSame(vals)) return true;
+ switch(cond.id){
+  case 'twoPairs': return f.join(',')==='2,2,1,1';
+  case 'fourStraight': return hasStraight(vals,4);
+  case 'sumLe12': return sum<=12;
+  case 'sumGe30': return sum>=30;
+  case 'allEven': return vals.every(v=>v%2===0);
+  case 'allOdd': return vals.every(v=>v%2===1);
+  case 'twoTriples': return f.join(',')==='3,3';
+  case 'threePairs': return f.join(',')==='2,2,2';
+  case 'fourPlusPair': return f.join(',')==='4,2';
+  case 'fiveStraight': return hasStraight(vals,5);
+  case 'triplePlusPair': return f.join(',')==='3,2,1';
+  case 'triple': return f[0]===3 && !f.includes(2);
+  case 'quad': return f[0]===4 && f.length===3;
+ }
+}
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function makeBoard(){
+ const byId=Object.fromEntries(CONDITIONS.map(c=>[c.id,c]));
+ const pools=Object.fromEntries(Object.entries(CONDITION_TIERS).map(([color,ids])=>[color,shuffle(ids.map(id=>byId[id]))]));
+ const indexes={v:0,m:0,p:0};
+ return COLOR_ROWS.flatMap((row,r)=>[...row].map((col,c)=>{
+  const pool=pools[col];
+  const cond=pool[indexes[col]++%pool.length];
+  return {r,c,color:col,pts:PTS[col],cond,stone:null};
+ }));
+}
+function setupTypeRows(){
+ const n=+document.getElementById('playerCount').value;
+ const box=document.getElementById('playerTypes'); box.innerHTML='';
+ for(let i=0;i<n;i++){
+  const div=document.createElement('div'); div.className='row';
+  div.innerHTML=`<label>Pelaaja ${i+1}</label><select data-type="${i}"><option value="human">Ihminen</option><option value="ai">AI</option></select>`;
+  box.appendChild(div);
+ }
+}
+function newGame(){
+ const n=+document.getElementById('playerCount').value;
+ const types=[...document.querySelectorAll('[data-type]')].slice(0,n).map(s=>s.value);
+ state={board:makeBoard(), players:types.map((t,i)=>({name:(t==='ai'?'AI ':'Pelaaja ')+(i+1), type:t, stones:10, score:0, color:PLAYER_COLORS[i]})), current:0, round:1, dice:[null,null,null,null,null,null], reroll:[false,false,false,false,false,false], rolls:0, phase:'roll', log:[]};
+ document.getElementById('setup').classList.add('hidden');
+ render(); log('Peli alkaa.'); maybeAI();
+}
+function render(){ renderBoard(); renderDice(); renderPlayers(); updateInfo(); }
+function renderBoard(){
+ const b=document.getElementById('board'); b.innerHTML='';
+ const vals=state.dice;
+ state.board.forEach((cell,idx)=>{
+  const d=document.createElement('div'); d.className=`cell ${cell.color}`;
+  const valid=canPlaceOnCell(cell,vals);
+  if(valid) d.classList.add('valid');
+  d.innerHTML=`<div class="pts">${cell.pts}</div><div class="cond">${cell.cond.short}</div>${cell.stone!==null?`<div class="stone ${state.players[cell.stone].color}"></div>`:''}`;
+  d.onclick=()=>placeStone(idx);
+  b.appendChild(d);
+ });
+}
+function renderDice(){
+ const box=document.getElementById('dice'); box.innerHTML='';
+ state.dice.forEach((v,i)=>{ const d=document.createElement('div'); d.className='die'+(state.reroll[i]?' reroll':''); d.textContent=v ?? ''; d.onclick=()=>{ if(state.rolls>0 && state.phase==='roll' && currentPlayer().type==='human'){state.reroll[i]=!state.reroll[i]; renderDice();}}; box.appendChild(d); });
+ document.getElementById('comboText').textContent = state.rolls ? exactCombo(state.dice) : 'Heitä nopat.';
+}
+function renderPlayers(){
+ const box=document.getElementById('players'); box.innerHTML='';
+ state.players.forEach((p,i)=>{ const div=document.createElement('div'); div.className='player'+(i===state.current?' active':''); div.innerHTML=`<div class="dot ${p.color}"></div><div>${p.name}<br><small>${p.type==='ai'?'AI':'ihminen'}</small></div><div>${p.stones} kiveä</div>`; box.appendChild(div); });
+}
+function updateInfo(){
+ document.getElementById('turnInfo').textContent=`Kierros ${state.round}/10 · ${currentPlayer().name}`;
+ document.getElementById('rollInfo').textContent=`Heitto ${state.rolls}/3`;
+ const human=currentPlayer().type==='human';
+ document.getElementById('rollBtn').disabled=!human || state.rolls>=3;
+ document.getElementById('endBtn').disabled=!human || state.rolls===0;
+ document.getElementById('log').innerHTML=state.log.slice(-8).map(x=>`<div>${x}</div>`).join('');
+}
+function currentPlayer(){ return state.players[state.current]; }
+function roll(){
+ if(state.rolls>=3) return;
+ state.dice=state.dice.map((v,i)=>state.rolls===0 || state.reroll[i] ? 1+Math.floor(Math.random()*6) : v);
+ state.reroll=[false,false,false,false,false,false];
+ state.rolls++; render();
+}
+function validCells(){ return state.board.map((c,i)=>({c,i})).filter(x=>canPlaceOnCell(x.c,state.dice)); }
+function placeStone(idx){
+ const p=currentPlayer(); if(p.type!=='human' || state.rolls===0) return;
+ const cell=state.board[idx];
+ if(!canPlaceOnCell(cell,state.dice)){ flashInvalid(idx); return; }
+ finishPlacement(idx);
+}
+function flashInvalid(idx){
+ const cells=document.querySelectorAll('.cell'); cells[idx].classList.add('invalidHint'); setTimeout(()=>cells[idx]?.classList.remove('invalidHint'),350);
+}
+function finishPlacement(idx){
+ const p=currentPlayer(); const removed=state.board[idx].stone;
+ state.board[idx].stone=state.current; p.stones--;
+ log(removed===null ? `${p.name}: kivi ruutuun ${coord(idx)} (${state.board[idx].cond.name}).` : `${p.name}: kivi ruutuun ${coord(idx)} ja vanha kivi poistui pelistä.`);
+ nextTurn();
+}
+function endTurn(){
+ if(state.rolls===0) return;
+ const cells=validCells();
+ if(cells.length===0){ currentPlayer().stones--; log(`${currentPlayer().name}: ei kelvollista ruutua, kivi menetettiin.`); nextTurn(); }
+ else log('Valitse vihreä ruutu laudalta.');
+}
+function nextTurn(){
+ state.current++;
+ if(state.current>=state.players.length){ state.current=0; state.round++; }
+ if(state.round>10 || state.players.every(p=>p.stones<=0)){ endGame(); return; }
+ state.dice=[null,null,null,null,null,null]; state.reroll=[false,false,false,false,false,false]; state.rolls=0; state.phase='roll'; render(); maybeAI();
+}
+function maybeAI(){ if(currentPlayer().type==='ai') setTimeout(aiPlay,450); }
+function aiPlay(){
+ if(currentPlayer().type!=='ai') return;
+ // Simple AI: roll up to 3 times and place on the best available square.
+ for(let r=0;r<3;r++){
+  state.dice=state.dice.map(()=>1+Math.floor(Math.random()*6)); state.rolls++;
+  const cells=validCells(); if(cells.length){ break; }
+ }
+ const cells=validCells();
+ if(!cells.length){ currentPlayer().stones--; log(`${currentPlayer().name}: ei kelvollista ruutua, kivi menetettiin.`); nextTurn(); return; }
+ const best=cells.map(x=>({idx:x.i, value:scorePotential(x.i,state.current)})).sort((a,b)=>b.value-a.value)[0];
+ finishPlacement(best.idx);
+}
+function scorePotential(idx,player){
+ const c=state.board[idx]; let val=c.pts;
+ const r=Math.floor(idx/7), col=idx%7;
+ val += lineLen(r,col,0,1,player)*3 + lineLen(r,col,1,0,player)*3;
+ return val;
+}
+function lineLen(r,c,dr,dc,p){ let n=1; for(const s of [-1,1]){ let rr=r+dr*s, cc=c+dc*s; while(rr>=0&&rr<7&&cc>=0&&cc<7&&state.board[rr*7+cc].stone===p){n++; rr+=dr*s; cc+=dc*s;} } return n; }
+function endGame(){
+ state.players.forEach((p,i)=>p.score=calcScore(i)); render();
+ const sorted=[...state.players].sort((a,b)=>b.score-a.score);
+ document.getElementById('resultBody').innerHTML='<table class="scoreTable"><tr><th>Pelaaja</th><th>Pisteet</th></tr>'+sorted.map(p=>`<tr><td>${p.name}</td><td>${p.score}</td></tr>`).join('')+'</table>';
+ document.getElementById('results').classList.remove('hidden');
+}
+function calcScore(player){
+ let total=0;
+ for(let r=0;r<7;r++) total+=scoreLine([...Array(7)].map((_,c)=>state.board[r*7+c]),player);
+ for(let c=0;c<7;c++) total+=scoreLine([...Array(7)].map((_,r)=>state.board[r*7+c]),player);
+ return total;
+}
+function scoreLine(line,player){
+ let sum=0, run=[];
+ function flush(){ if(run.length){ const pts=run.reduce((a,c)=>a+c.pts,0); sum+=pts*run.length; run=[]; } }
+ line.forEach(c=>{ if(c.stone===player) run.push(c); else flush(); }); flush(); return sum;
+}
+function coord(idx){ return String.fromCharCode(65+idx%7)+(Math.floor(idx/7)+1); }
+function log(s){ state.log.push(s); updateInfo(); scrollLogToBottom(); }
+function scrollLogToBottom(){ const el=document.getElementById('log'); el.scrollTop=el.scrollHeight; }
+
+document.getElementById('playerCount').onchange=setupTypeRows;
+document.getElementById('startBtn').onclick=newGame;
+document.getElementById('newBtn').onclick=()=>document.getElementById('setup').classList.remove('hidden');
+document.getElementById('againBtn').onclick=()=>{document.getElementById('results').classList.add('hidden'); document.getElementById('setup').classList.remove('hidden');};
+document.getElementById('rulesBtn').onclick=()=>document.getElementById('rulesModal').classList.remove('hidden');
+document.getElementById('closeRulesBtn').onclick=()=>document.getElementById('rulesModal').classList.add('hidden');
+document.getElementById('rollBtn').onclick=roll;
+document.getElementById('endBtn').onclick=endTurn;
+setupTypeRows();
+if('serviceWorker' in navigator && location.protocol !== 'file:'){
+ navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+</script>
+</body>
+</html>

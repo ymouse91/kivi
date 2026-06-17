@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Kivi</title>
+  <desc id="desc">Kivi-pelin ikoni, jossa on pelilauta, noppa ja värillisiä kiviä.</desc>
+  <rect width="512" height="512" rx="112" fill="#15171c"/>
+  <rect x="54" y="54" width="404" height="404" rx="78" fill="#20242d" stroke="#404756" stroke-width="10"/>
+  <g transform="translate(104 104)">
+    <rect x="0" y="0" width="88" height="88" rx="18" fill="#f2eee5"/>
+    <rect x="108" y="0" width="88" height="88" rx="18" fill="#252a31"/>
+    <rect x="216" y="0" width="88" height="88" rx="18" fill="#d63e73"/>
+    <rect x="0" y="108" width="88" height="88" rx="18" fill="#252a31"/>
+    <rect x="108" y="108" width="88" height="88" rx="18" fill="#d63e73"/>
+    <rect x="216" y="108" width="88" height="88" rx="18" fill="#f2eee5"/>
+    <rect x="0" y="216" width="88" height="88" rx="18" fill="#d63e73"/>
+    <rect x="108" y="216" width="88" height="88" rx="18" fill="#f2eee5"/>
+    <rect x="216" y="216" width="88" height="88" rx="18" fill="#252a31"/>
+  </g>
+  <rect x="174" y="174" width="164" height="164" rx="34" fill="#f8f3e7" stroke="#111820" stroke-width="10"/>
+  <circle cx="218" cy="218" r="14" fill="#15171c"/>
+  <circle cx="256" cy="256" r="14" fill="#15171c"/>
+  <circle cx="294" cy="294" r="14" fill="#15171c"/>
+  <circle cx="154" cy="354" r="31" fill="#32a8ff" stroke="#ffffff" stroke-width="8"/>
+  <circle cx="358" cy="154" r="31" fill="#ffb12e" stroke="#ffffff" stroke-width="8"/>
+  <circle cx="358" cy="358" r="31" fill="#6ee06e" stroke="#ffffff" stroke-width="8"/>
+</svg>
