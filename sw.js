@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kivi-v1';
+const CACHE_NAME = 'kivi-v2';
 const ASSETS = [
   './',
   './index.html',
