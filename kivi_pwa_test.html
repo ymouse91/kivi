@@ -74,6 +74,8 @@ h1{font-size:clamp(20px,3vw,34px); margin:0; letter-spacing:.02em;}
 .row{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:10px 0; align-items:center;}
 .row label{font-weight:700; color:var(--muted);}
 .row select,.row input{width:100%; border:1px solid #4b5363; border-radius:10px; padding:9px; background:#12151b; color:#fff;}
+.playerSetup{grid-template-columns:1fr 1fr 1fr;}
+.aiNameHint{color:var(--muted); font-size:13px; font-weight:700;}
 .hidden{display:none!important;}
 .scoreTable{width:100%; border-collapse:collapse; font-size:14px;}
 .scoreTable td,.scoreTable th{padding:6px; border-bottom:1px solid #3a414e; text-align:left;}
@@ -195,6 +197,7 @@ const CONDITION_TIERS = {
 };
 const PTS = {v:1,m:2,p:3};
 const PLAYER_COLORS = ['p1','p2','p3','p4'];
+const AI_NAMES = ['Äly Kääpiö','Digi Teppo','Koodi Kalle','Peli Pekka'];
 let state;
 
 function counts(vals){ const c=[0,0,0,0,0,0,0]; vals.forEach(v=>c[v]++); return c; }
@@ -246,6 +249,7 @@ function validFor(cond, vals){
  }
 }
 function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
 function makeBoard(){
  const byId=Object.fromEntries(CONDITIONS.map(c=>[c.id,c]));
  const pools=Object.fromEntries(Object.entries(CONDITION_TIERS).map(([color,ids])=>[color,shuffle(ids.map(id=>byId[id]))]));
@@ -260,15 +264,30 @@ function setupTypeRows(){
  const n=+document.getElementById('playerCount').value;
  const box=document.getElementById('playerTypes'); box.innerHTML='';
  for(let i=0;i<n;i++){
-  const div=document.createElement('div'); div.className='row';
-  div.innerHTML=`<label>Pelaaja ${i+1}</label><select data-type="${i}"><option value="human">Ihminen</option><option value="ai">AI</option></select>`;
+  const div=document.createElement('div'); div.className='row playerSetup';
+  div.innerHTML=`<label>Pelaaja ${i+1}</label><select data-type="${i}"><option value="human">Ihminen</option><option value="ai">AI</option></select><input data-name="${i}" value="Pelaaja ${i+1}" aria-label="Pelaajan ${i+1} nimi"><div class="aiNameHint hidden" data-ai-name="${i}">Nimi arvotaan</div>`;
   box.appendChild(div);
+  div.querySelector('[data-type]').onchange=()=>toggleSetupName(i);
+  toggleSetupName(i);
  }
+}
+function toggleSetupName(i){
+ const type=document.querySelector(`[data-type="${i}"]`);
+ const input=document.querySelector(`[data-name="${i}"]`);
+ const hint=document.querySelector(`[data-ai-name="${i}"]`);
+ const ai=type?.value==='ai';
+ input?.classList.toggle('hidden',ai);
+ hint?.classList.toggle('hidden',!ai);
 }
 function newGame(){
  const n=+document.getElementById('playerCount').value;
  const types=[...document.querySelectorAll('[data-type]')].slice(0,n).map(s=>s.value);
- state={board:makeBoard(), players:types.map((t,i)=>({name:(t==='ai'?'AI ':'Pelaaja ')+(i+1), type:t, stones:10, score:0, color:PLAYER_COLORS[i]})), current:0, round:1, dice:[null,null,null,null,null,null], reroll:[false,false,false,false,false,false], rolls:0, phase:'roll', log:[]};
+ const aiNames=shuffle([...AI_NAMES]);
+ state={board:makeBoard(), players:types.map((t,i)=>{
+  const input=document.querySelector(`[data-name="${i}"]`);
+  const humanName=(input?.value || '').trim() || `Pelaaja ${i+1}`;
+  return {name:t==='ai'?aiNames.pop():humanName, type:t, stones:10, score:0, color:PLAYER_COLORS[i]};
+ }), current:0, round:1, dice:[null,null,null,null,null,null], reroll:[false,false,false,false,false,false], rolls:0, phase:'roll', log:[]};
  render();
  document.getElementById('app').classList.remove('preGame');
  document.getElementById('setup').classList.add('hidden');
@@ -294,7 +313,7 @@ function renderDice(){
 }
 function renderPlayers(){
  const box=document.getElementById('players'); box.innerHTML='';
- state.players.forEach((p,i)=>{ const div=document.createElement('div'); div.className='player'+(i===state.current?' active':''); div.innerHTML=`<div class="dot ${p.color}"></div><div>${p.name}<br><small>${p.type==='ai'?'AI':'ihminen'}</small></div><div>${p.stones} kiveä</div>`; box.appendChild(div); });
+ state.players.forEach((p,i)=>{ const div=document.createElement('div'); div.className='player'+(i===state.current?' active':''); div.innerHTML=`<div class="dot ${p.color}"></div><div>${escapeHtml(p.name)}<br><small>${p.type==='ai'?'AI':'ihminen'}</small></div><div>${p.stones} kiveä</div>`; box.appendChild(div); });
 }
 function updateInfo(){
  document.getElementById('turnInfo').textContent=`Kierros ${state.round}/10 · ${currentPlayer().name}`;
@@ -302,7 +321,7 @@ function updateInfo(){
  const human=currentPlayer().type==='human';
  document.getElementById('rollBtn').disabled=!human || state.rolls>=3;
  document.getElementById('endBtn').disabled=!human || state.rolls===0;
- document.getElementById('log').innerHTML=state.log.slice(-8).map(x=>`<div>${x}</div>`).join('');
+ document.getElementById('log').innerHTML=state.log.slice(-8).map(x=>`<div>${escapeHtml(x)}</div>`).join('');
 }
 function currentPlayer(){ return state.players[state.current]; }
 function roll(){
@@ -481,7 +500,7 @@ function maskToReroll(mask){ return [...Array(6)].map((_,i)=>!!(mask&(1<<i))); }
 function endGame(){
  state.players.forEach((p,i)=>p.score=calcScore(i)); render();
  const sorted=[...state.players].sort((a,b)=>b.score-a.score);
- document.getElementById('resultBody').innerHTML='<table class="scoreTable"><tr><th>Pelaaja</th><th>Pisteet</th></tr>'+sorted.map(p=>`<tr><td>${p.name}</td><td>${p.score}</td></tr>`).join('')+'</table>';
+ document.getElementById('resultBody').innerHTML='<table class="scoreTable"><tr><th>Pelaaja</th><th>Pisteet</th></tr>'+sorted.map(p=>`<tr><td>${escapeHtml(p.name)}</td><td>${p.score}</td></tr>`).join('')+'</table>';
  document.getElementById('results').classList.remove('hidden');
 }
 function calcScore(player){
