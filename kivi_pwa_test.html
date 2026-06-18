@@ -263,9 +263,11 @@ function makeBoard(){
 function setupTypeRows(){
  const n=+document.getElementById('playerCount').value;
  const box=document.getElementById('playerTypes'); box.innerHTML='';
+ const aiNames=shuffle([...AI_NAMES]);
  for(let i=0;i<n;i++){
+  const aiName=aiNames[i%aiNames.length];
   const div=document.createElement('div'); div.className='row playerSetup';
-  div.innerHTML=`<label>Pelaaja ${i+1}</label><select data-type="${i}"><option value="human">Ihminen</option><option value="ai">AI</option></select><input data-name="${i}" value="Pelaaja ${i+1}" aria-label="Pelaajan ${i+1} nimi"><div class="aiNameHint hidden" data-ai-name="${i}">Nimi arvotaan</div>`;
+  div.innerHTML=`<label>Pelaaja ${i+1}</label><select data-type="${i}"><option value="human">Ihminen</option><option value="ai">AI</option></select><input data-name="${i}" value="Pelaaja ${i+1}" aria-label="Pelaajan ${i+1} nimi"><div class="aiNameHint hidden" data-ai-name="${i}">${escapeHtml(aiName)}</div>`;
   box.appendChild(div);
   div.querySelector('[data-type]').onchange=()=>toggleSetupName(i);
   toggleSetupName(i);
@@ -282,11 +284,11 @@ function toggleSetupName(i){
 function newGame(){
  const n=+document.getElementById('playerCount').value;
  const types=[...document.querySelectorAll('[data-type]')].slice(0,n).map(s=>s.value);
- const aiNames=shuffle([...AI_NAMES]);
  state={board:makeBoard(), players:types.map((t,i)=>{
   const input=document.querySelector(`[data-name="${i}"]`);
+  const aiName=document.querySelector(`[data-ai-name="${i}"]`)?.textContent || AI_NAMES[i%AI_NAMES.length];
   const humanName=(input?.value || '').trim() || `Pelaaja ${i+1}`;
-  return {name:t==='ai'?aiNames.pop():humanName, type:t, stones:10, score:0, color:PLAYER_COLORS[i]};
+  return {name:t==='ai'?aiName:humanName, type:t, stones:10, score:0, color:PLAYER_COLORS[i]};
  }), current:0, round:1, dice:[null,null,null,null,null,null], reroll:[false,false,false,false,false,false], rolls:0, phase:'roll', log:[]};
  render();
  document.getElementById('app').classList.remove('preGame');
