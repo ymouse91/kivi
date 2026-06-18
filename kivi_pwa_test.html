@@ -136,6 +136,17 @@ h1{font-size:clamp(20px,3vw,34px); margin:0; letter-spacing:.02em;}
 <div id="setup" class="setup">
   <div class="dialog">
     <h2>Uusi peli</h2>
+    <div class="rules">
+      <p>Pelataan 2-4 pelaajalla. Jokaisella on 10 kiveä ja peli kestää 10 kierrosta.</p>
+      <ul>
+        <li>Heitä 6 noppaa. Saat heittää enintään kolme kertaa.</li>
+        <li>Ensimmäisen heiton jälkeen valitse nopat, jotka heitetään uudestaan.</li>
+        <li>Lopputuloksella saa asettaa yhden kiven kelvolliseen vapaaseen ruutuun.</li>
+        <li>Viisi samaa tai kuuden suora: aseta kivi mihin tahansa vapaaseen ruutuun.</li>
+        <li>Kuusi samaa: aseta kivi mihin tahansa ruutuun; varattu kivi poistuu pelistä.</li>
+        <li>Pisteet lasketaan yhtenäisistä vaaka- ja pystyriveistä: ruutujen summa kertaa rivin pituus.</li>
+      </ul>
+    </div>
     <div class="row"><label>Pelaajia</label><select id="playerCount"><option>2</option><option>3</option><option>4</option></select></div>
     <div id="playerTypes"></div>
     <button id="startBtn" class="primary" style="width:100%;margin-top:12px">Aloita</button>
