@@ -342,7 +342,7 @@ function aiPlay(){
   aiRollSelectedDice();
   const bestNow=bestValidMove();
   const plan=bestRerollPlan();
-  if(state.rolls>=3 || (bestNow && (!plan || bestNow.value>=plan.expected))){
+  if(bestNow && (state.rolls>=3 || !plan || bestNow.value>=plan.expected)){
    finishPlacement(bestNow.idx); return;
   }
   if(!plan || !plan.reroll.some(Boolean)) break;
