@@ -201,6 +201,8 @@ function hasStraight(vals,n){ const set=new Set(vals); for(let s=1;s<=7-n;s++){ 
 function isSixSame(vals){ return vals.length===6 && vals.every(v=>v===vals[0]); }
 function isFiveSame(vals){ return vals.length===6 && Math.max(...counts(vals))===5; }
 function isSixStraight(vals){ return vals.length===6 && new Set(vals).size===6 && vals.every(v=>v>=1&&v<=6); }
+function isExactFourStraight(vals){ return hasStraight(vals,4) && !hasStraight(vals,5); }
+function isExactFiveStraight(vals){ return hasStraight(vals,5) && !isSixStraight(vals); }
 function canPlaceOnCell(cell, vals){ return state.rolls>0 && (cell.stone===null || isSixSame(vals)) && validFor(cell.cond,vals); }
 function exactCombo(vals){
  const f=freqs(vals); const sum=vals.reduce((a,b)=>a+b,0);
@@ -214,8 +216,8 @@ function exactCombo(vals){
  if(f.join(',')==='2,2,1,1') return 'Kaksi paria';
  if(f[0]===4) return 'Neloset';
  if(f[0]===3) return 'Kolmoset';
- if(hasStraight(vals,5)) return 'Viiden suora';
- if(hasStraight(vals,4)) return 'Neljän suora';
+ if(isExactFiveStraight(vals)) return 'Viiden suora';
+ if(isExactFourStraight(vals)) return 'Neljän suora';
  if(vals.every(v=>v%2===0)) return 'Kaikki parillisia';
  if(vals.every(v=>v%2===1)) return 'Kaikki parittomia';
  if(sum<=12) return 'Summa ≤ 12';
@@ -227,7 +229,7 @@ function validFor(cond, vals){
  if(isSixSame(vals) || isSixStraight(vals) || isFiveSame(vals)) return true;
  switch(cond.id){
   case 'twoPairs': return f.join(',')==='2,2,1,1';
-  case 'fourStraight': return hasStraight(vals,4);
+  case 'fourStraight': return isExactFourStraight(vals);
   case 'sumLe12': return sum<=12;
   case 'sumGe30': return sum>=30;
   case 'allEven': return vals.every(v=>v%2===0);
@@ -235,9 +237,9 @@ function validFor(cond, vals){
   case 'twoTriples': return f.join(',')==='3,3';
   case 'threePairs': return f.join(',')==='2,2,2';
   case 'fourPlusPair': return f.join(',')==='4,2';
-  case 'fiveStraight': return hasStraight(vals,5);
+  case 'fiveStraight': return isExactFiveStraight(vals);
   case 'triplePlusPair': return f.join(',')==='3,2,1';
-  case 'triple': return f[0]===3 && !f.includes(2);
+  case 'triple': return f.join(',')==='3,1,1,1';
   case 'quad': return f[0]===4 && f.length===3;
  }
 }
